@@ -7,7 +7,7 @@ AS
    header: DZ_DICT
      
    - Build ID: DZBUILDIDDZ
-   - TFS Change Set: DZTFSCHANGESETDZ
+   - TFS Change Set: DZCHANGESETDZ
    
    Utilities for the manipulation of the Oracle data dictionary.
    
