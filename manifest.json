@@ -1,0 +1,141 @@
+{
+    "constants": [
+       {
+          "key":   "JOBNAME"
+         ,"value": "DZ_DICT"
+       }
+      ,{
+          "key": "GITRELEASE"
+         ,"cmd": "git describe --abbrev=0 --tags"
+       }
+      ,{
+          "key": "GITCOMMIT"
+         ,"cmd": "git rev-parse master"
+       }
+      ,{
+          "key": "GITCOMMITDATE"
+         ,"cmd": "git show -s --format=%cd"
+       }
+      ,{
+          "key": "GITCOMMITAUTH"
+         ,"cmd": "git show -s --format=%an"
+       }
+    ]
+   ,"tasks": [
+       {
+          "id": "concatenate"
+         ,"output": "dz_dict_deploy.sql"
+         ,"includes": [
+             "%%SQLHEADER%%"
+            ,"Types/DZ_DICT_ORACLE_OBJECT.tps"
+            ,"Types/DZ_DICT_ORACLE_OBJECT.tpb"
+            ,"Collections/DZ_DICT_ORACLE_OBJECT_LIST.tps"
+            ,"Packages/DZ_DICT_UTIL.pks"
+            ,"Packages/DZ_DICT_UTIL.pkb"
+            ,"Packages/DZ_DICT_MAIN.pks"
+            ,"Packages/DZ_DICT_MAIN.pkb"
+            ,"Types/DZ_DICT_GUUID_GENERATOR.tps"
+            ,"Types/DZ_DICT_GUUID_GENERATOR.tpb"
+            ,"Types/DZ_DICT_SEQUENCE_GENERATOR.tps"
+            ,"Types/DZ_DICT_SEQUENCE_GENERATOR.tpb"
+            ,"Packages/DZ_DICT_TEST.pks"
+            ,"Packages/DZ_DICT_TEST.pkb"
+            ,"%%SQLFOOTER%%"
+          ]
+         ,"separator": "--******************************--\nPROMPT %%FILENAME%% \n\n"
+         ,"components": [
+             {
+                "identifier": "SQLHEADER"
+               ,"content": [
+                   "WHENEVER SQLERROR EXIT -99;"
+                  ,"WHENEVER OSERROR  EXIT -98;"
+                  ,"SET DEFINE OFF;"
+                  ,""
+                ]
+             }
+            ,{
+                "identifier": "SQLFOOTER"
+               ,"content": [
+                   "SHOW ERROR;"
+                  ,""
+                  ,"DECLARE"
+                  ,"   l_num_errors PLS_INTEGER;"
+                  ,""
+                  ,"BEGIN"
+                  ,""
+                  ,"   SELECT"
+                  ,"   COUNT(*)"
+                  ,"   INTO l_num_errors"
+                  ,"   FROM"
+                  ,"   user_errors a"
+                  ,"   WHERE"
+                  ,"   a.name LIKE '%JOBNAME%%';"
+                  ,""
+                  ,"   IF l_num_errors <> 0"
+                  ,"   THEN"
+                  ,"      RAISE_APPLICATION_ERROR(-20001,'COMPILE ERROR');"
+                  ,""
+                  ,"   END IF;"
+                  ,""
+                  ,"   l_num_errors := %JOBNAME%_TEST.inmemory_test();"
+                  ,""
+                  ,"   IF l_num_errors <> 0"
+                  ,"   THEN"
+                  ,"      RAISE_APPLICATION_ERROR(-20001,'INMEMORY TEST ERROR');"
+                  ,""
+                  ,"   END IF;"
+                  ,""
+                  ,"END;"
+                  ,"/"
+                  ,""
+                  ,"EXIT;"
+                  ,"SET DEFINE OFF;"
+                  ,""
+                ]
+             }
+          ]
+         ,"configurations": [
+            {
+                "id": 1
+               ,"file": "Packages/DZ_DICT_TEST.pks"
+               ,"replacements": [
+                   {
+                      "string": "C_GITRELEASE    CONSTANT VARCHAR2(255 Char) := 'NULL';"
+                     ,"value":  "C_GITRELEASE    CONSTANT VARCHAR2(255 Char) := '%GITRELEASE%';"
+                   }
+                  ,{
+                      "string": "C_GITCOMMIT     CONSTANT VARCHAR2(255 Char) := 'NULL';"
+                     ,"value":  "C_GITCOMMIT     CONSTANT VARCHAR2(255 Char) := '%GITCOMMIT%';"
+                   }
+                  ,{
+                      "string": "C_GITCOMMITDATE CONSTANT VARCHAR2(255 Char) := 'NULL';"
+                     ,"value":  "C_GITCOMMITDATE CONSTANT VARCHAR2(255 Char) := '%GITCOMMITDATE%';"
+                   }
+                  ,{
+                      "string": "C_GITCOMMITAUTH CONSTANT VARCHAR2(255 Char) := 'NULL';"
+                     ,"value":  "C_GITCOMMITAUTH CONSTANT VARCHAR2(255 Char) := '%GITCOMMITAUTH%';"
+                   }
+                ]
+            }
+          ]
+       }
+      ,{
+          "id": "naturaldocs"
+         ,"input":  "dz_dict_deploy.sql"
+         ,"output_dir": "stage1"
+       }
+      ,{
+          "id": "wkhtmltopdf"
+         ,"input_dir": "stage1"
+         ,"output": "dz_dict_deploy.pdf"
+       }
+      ,{
+          "id": "artifacts"
+         ,"targets": [
+             "dz_dict_deploy.sql"
+            ,"dz_dict_deploy.pdf"
+         ]
+       }
+   ]
+}
+

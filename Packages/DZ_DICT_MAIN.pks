@@ -6,8 +6,8 @@ AS
    /*
    header: DZ_DICT
      
-   - Build ID: DZBUILDIDDZ
-   - Change Set: DZCHANGESETDZ
+   - Release: %GITRELEASE%
+   - Commit Date: %GITCOMMITDATE%
    
    Utilities for the manipulation of the Oracle data dictionary.
    
